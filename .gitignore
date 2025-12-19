@@ -1,0 +1,31 @@
+# --- Python Caches (The most important part) ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+
+# --- Testing & Type Checking Caches ---
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# --- Operating System Caches ---
+.DS_Store
+Thumbs.db
+
+# --- IDE Settings (VS Code / PyCharm) ---
+.vscode/
+.idea/
+
+# --- Project Specific Data ---
+# Ignore the folder where you store captured face images locally
+face_data/
+*.jpg
+*.png
+*.log
+
