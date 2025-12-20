@@ -111,8 +111,8 @@ async def detect_emotion(
         server_message = "Processed. No aggregation yet."
         
         # Buffer Logic
-        if current_emotion.lower() != "none":
-            
+        # if current_emotion.lower() != "none":
+        if True:
             # A. Add to Memory
             aggregated_emotion = buffer_manager.add_entry(validated_id, current_emotion)
             
