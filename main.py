@@ -11,7 +11,7 @@ from supabase import create_client, Client
 from dotenv import load_dotenv
 from collections import Counter # Removed 'deque'
 
-# --- 1. The Clean Buffer Logic ---
+# --- 1. Buffer Logic ---
 class EmotionBuffer:
     def __init__(self, aggregation_minutes: int = 5):
         self.buffers = {}
@@ -40,10 +40,21 @@ class EmotionBuffer:
         if duration >= (self.aggregation_minutes * 60):
             emotions_list = [entry[1] for entry in user_data]
             
-            # Get the most common emotion
+            most_common = None
+
             if emotions_list:
-                most_common = Counter(emotions_list).most_common(1)[0][0]
+                # --- NEW LOGIC START ---
+                # 1. Try to find real emotions (ignoring 'none')
+                real_emotions = [e for e in emotions_list if e.lower() != 'none']
                 
+                if real_emotions:
+                    # If we have ANY real emotions, calculate the winner from those
+                    most_common = Counter(real_emotions).most_common(1)[0][0]
+                else:
+                    # If the list was 100% 'none', then the result is 'none'
+                    most_common = "none"
+                # --- NEW LOGIC END ---
+
                 # Reset Buffer for this user (Start next 5 min window)
                 self.buffers[user_id] = []
                 
@@ -53,7 +64,7 @@ class EmotionBuffer:
         return None
 
 # Initialize Global Buffer
-buffer_manager = EmotionBuffer(aggregation_minutes=1)
+buffer_manager = EmotionBuffer(aggregation_minutes=5)
 
 # --- 2. FastAPI Setup ---
 load_dotenv()
