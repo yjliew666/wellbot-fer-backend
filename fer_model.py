@@ -9,6 +9,24 @@ model = YOLO("./best.onnx", task="detect")
 emotion_classes = {0: "angry", 1: "fear", 2: "happy", 3: "neutral", 4: "sad"}
 
 def predict_emotion(image):
+    # GUARD CLAUSES
+    if image is None:
+        logging.warning("Predict Emotion: Input image is None.")
+        return {"emotion": "none", "confidence": 0.0}
+
+    if not isinstance(image, np.ndarray):
+        logging.warning(f"Predict Emotion: Invalid input type. Expected np.ndarray, got {type(image)}.")
+        return {"emotion": "none", "confidence": 0.0}
+
+    if image.size == 0:
+        logging.warning("Predict Emotion: Input image array is empty.")
+        return {"emotion": "none", "confidence": 0.0}
+
+    # Protect against 1D arrays or weird shapes that cause IndexErrors
+    if len(image.shape) < 2:
+        logging.warning(f"Predict Emotion: Invalid image shape {image.shape}. Needs at least 2 dimensions.")
+        return {"emotion": "none", "confidence": 0.0}
+    
     # Ensure 3 channels 
     if len(image.shape) == 2 or image.shape[2] == 1:
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
