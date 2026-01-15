@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from status_tracker import status_tracker, router as status_router
 # removed 'collections' because we use max() now, not Counter()
 
+MALAYSIA_TZ = datetime.timezone(datetime.timedelta(hours=8))
 # --- 1. Buffer Logic (Max Confidence Strategy) ---
 class EmotionBuffer:
     def __init__(self, aggregation_minutes: int = 5):
@@ -23,7 +24,7 @@ class EmotionBuffer:
         Adds entry and returns (Aggregated_Emotion, Aggregated_Confidence) 
         if the time window has closed. Otherwise returns None.
         """
-        now = datetime.datetime.now(datetime.timezone.utc)
+        now = datetime.datetime.now(MALAYSIA_TZ)
         
         if user_id not in self.buffers:
             self.buffers[user_id] = []
@@ -54,7 +55,6 @@ class EmotionBuffer:
 
             if real_emotions:
                 # 2. Find the entry with the HIGHEST confidence score
-                # key=lambda x: x[2] tells max() to look at the confidence value
                 best_entry = max(real_emotions, key=lambda x: x[2])
                 final_emotion = best_entry[1]
                 final_confidence = best_entry[2]
@@ -119,7 +119,7 @@ async def detect_emotion(
         raise HTTPException(status_code=400, detail="Valid UUID required")
 
     # Track request
-    request_timestamp = datetime.datetime.now(datetime.timezone.utc)
+    request_timestamp = datetime.datetime.now(MALAYSIA_TZ)
     status_tracker.log_request(validated_id, request_timestamp, file.filename)
 
     try:
@@ -153,7 +153,7 @@ async def detect_emotion(
                 server_message = f"AGGREGATION COMPLETE: Saved '{agg_emotion}' ({agg_conf:.2f}) to DB."
                 
                 if supabase:
-                    now = datetime.datetime.now(datetime.timezone.utc)
+                    now = datetime.datetime.now(MALAYSIA_TZ)
                     db_record = {
                         "user_id": validated_id,
                         "timestamp": now.isoformat(),
@@ -169,7 +169,7 @@ async def detect_emotion(
                         db_write_success = False
 
         # Track result
-        result_timestamp = datetime.datetime.now(datetime.timezone.utc)
+        result_timestamp = datetime.datetime.now(MALAYSIA_TZ)
         status_tracker.log_result(
             validated_id,
             result_timestamp,
